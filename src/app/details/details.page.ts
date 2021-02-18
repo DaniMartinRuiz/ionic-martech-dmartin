@@ -3,6 +3,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { ProductdbService } from '../core/productdbservice.service';
 import { IProduct } from '../share/interfaces';
 import { ToastController } from '@ionic/angular';
+import {ProductcrudService} from '../core/productcrud.service'
 @Component({
   selector: 'app-details',
   templateUrl: './details.page.html',
@@ -14,14 +15,30 @@ export class DetailsPage implements OnInit {
   constructor(
     private activatedrouter: ActivatedRoute,
     private router: Router,
-    private productdbService: ProductdbService,
+    private productcrudService: ProductcrudService,
     public toastController: ToastController
   ) { }
   ngOnInit() {
     this.id = this.activatedrouter.snapshot.params.id;
-    this.productdbService.getItem(this.id).then(
-      (data: IProduct) => this.product = data
-    );
+    this.productcrudService.read_Product().subscribe(data => {
+      let products = data.map(e => {       
+        return {
+          id: e.payload.doc.id,
+          isEdit: false,
+          name: e.payload.doc.data()['name'],
+          description: e.payload.doc.data()['description'],
+          image: e.payload.doc.data()['image'],
+          price: e.payload.doc.data()['price'],
+        };
+      })
+      products.forEach(element => {
+        if(element.id == this.id){
+            
+            this.product = element;
+        }
+      });
+      console.log(this.product);
+    });
   }
   editRecord(product) {
     this.router.navigate(['edit', product.id])
@@ -36,7 +53,7 @@ export class DetailsPage implements OnInit {
           icon: 'delete',
           text: 'ACEPTAR',
           handler: () => {
-            this.productdbService.remove(id);
+            this.productcrudService.delete_Product(id);
             this.router.navigate(['home']);
           }
         }, {

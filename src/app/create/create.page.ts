@@ -4,6 +4,7 @@ import { ProductdbService } from '../core/productdbservice.service';
 import { Router } from '@angular/router';
 import { ToastController } from '@ionic/angular';
 import { IProduct } from '../share/interfaces';
+import { ProductcrudService } from '../core/productcrud.service'
 
 @Component({
   selector: 'app-create',
@@ -15,7 +16,7 @@ export class CreatePage implements OnInit {
   productForm: FormGroup;
   constructor(
     private router: Router,
-    private productdbService: ProductdbService,
+    private productcrudService: ProductcrudService,
     public toastController: ToastController
   ) { }
   ngOnInit() {
@@ -36,7 +37,8 @@ export class CreatePage implements OnInit {
           icon: 'save',
           text: 'ACEPTAR',
           handler: () => {
-            this.saveProduct();
+            this.product = this.productForm.value;
+            this.productcrudService.create_Product(this.product);
             this.router.navigate(['home']);
           }
         }, {
@@ -49,12 +51,5 @@ export class CreatePage implements OnInit {
       ]
     });
     toast.present();
-  }
-  saveProduct() {
-    this.product = this.productForm.value;
-    let nextKey = this.product.name.trim();
-    this.product.id = nextKey;
-    this.productdbService.setItem(nextKey, this.product);
-    console.warn(this.productForm.value);
   }
 }
